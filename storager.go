@@ -9,39 +9,17 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/aos-dev/go-coreutils"
-	"github.com/aos-dev/go-storage/v2"
+	ps "github.com/aos-dev/go-storage/v2/pairs"
 	"github.com/aos-dev/go-storage/v2/pkg/randbytes"
 	"github.com/aos-dev/go-storage/v2/services"
 	"github.com/aos-dev/go-storage/v2/types"
-	ps "github.com/aos-dev/go-storage/v2/types/pairs"
 	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestStorager(t *testing.T) {
-	srv := loadConfig()
-
-	for _, v := range srv {
-		pairs, err := ps.Parse(v.Options)
-		if err != nil {
-			t.Error(err)
-		}
-		println("Start test for ", v.Type)
-		testStorager(t, v.Type, pairs)
-		testDirLister(t, v.Type, pairs)
-	}
-}
-
-func testStorager(t *testing.T, typ string, pair []*types.Pair) {
+func TestStorager(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		var store storage.Storager
 		var err error
-
-		store, err = coreutils.OpenStorager(typ, pair...)
-		if err != nil {
-			t.Error(err)
-		}
 
 		Convey("The Storager should not be nil", func() {
 			So(store, ShouldNotBeNil)
@@ -79,7 +57,7 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 			}
 
 			path := uuid.New().String()
-			err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
+			_, err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -90,20 +68,19 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 				}
 			}()
 
-			r, err := store.Read(path)
+			var buf bytes.Buffer
+
+			n, err := store.Read(path, &buf)
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			Convey("The content should be match", func() {
-				So(r, ShouldNotBeNil)
+				So(buf, ShouldNotBeNil)
 
-				readContent, err := ioutil.ReadAll(r)
-				if err != nil {
-					t.Error(err)
-				}
-				So(sha256.Sum256(readContent), ShouldResemble, sha256.Sum256(content))
+				So(n, ShouldEqual, size)
+				So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
 			})
 
 		})
@@ -113,7 +90,7 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 			r := io.LimitReader(randbytes.NewRand(), size)
 			path := uuid.New().String()
 
-			err := store.Write(path, r, ps.WithSize(size))
+			_, err := store.Write(path, r, ps.WithSize(size))
 
 			defer func() {
 				err := store.Delete(path)
@@ -136,19 +113,23 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 				Convey("The name and size should be match", func() {
 					So(o, ShouldNotBeNil)
 					So(o.Name, ShouldEqual, path)
-					So(o.Size, ShouldEqual, size)
+
+					osize, ok := o.GetSize()
+					So(ok, ShouldBeTrue)
+					So(osize, ShouldEqual, size)
 				})
 			})
 
 			Convey("Read should get Object data without error", func() {
-				r, err := store.Read(path)
+				var buf bytes.Buffer
+				n, err := store.Read(path, &buf)
 
 				Convey("The error should be nil", func() {
 					So(err, ShouldBeNil)
 				})
 
-				Convey("The reader should not be nil", func() {
-					So(r, ShouldNotBeNil)
+				Convey("The size should be equal", func() {
+					So(n, ShouldEqual, size)
 				})
 			})
 
@@ -162,7 +143,7 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 			}
 
 			path := uuid.New().String()
-			err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
+			_, err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -182,7 +163,10 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 			Convey("The Object name and size should be match", func() {
 				So(o, ShouldNotBeNil)
 				So(o.Name, ShouldEqual, path)
-				So(o.Size, ShouldEqual, size)
+
+				osize, ok := o.GetSize()
+				So(ok, ShouldBeTrue)
+				So(osize, ShouldEqual, size)
 			})
 		})
 
@@ -194,7 +178,7 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 			}
 
 			path := uuid.New().String()
-			err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
+			_, err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
 			if err != nil {
 				t.Error(err)
 			}
@@ -212,81 +196,5 @@ func testStorager(t *testing.T, typ string, pair []*types.Pair) {
 				So(o, ShouldBeNil)
 			})
 		})
-	})
-}
-
-func testDirLister(t *testing.T, typ string, pair []*types.Pair) {
-	Convey("Given a dir lister", t, func() {
-		var store storage.Storager
-		var lister storage.DirLister
-		var err error
-
-		store, err = coreutils.OpenStorager(typ, pair...)
-		if err != nil {
-			t.Error(err)
-		}
-
-		lister, ok := store.(storage.DirLister)
-		if !ok {
-			t.Skip()
-		}
-
-		Convey("When List an empty dir", func() {
-			called := false
-			fn := types.ObjectFunc(func(_ *types.Object) {
-				called = true
-			})
-
-			err := lister.ListDir("", ps.WithFileFunc(fn))
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("The file func should not be called", func() {
-				So(called, ShouldBeFalse)
-			})
-
-		})
-
-		Convey("When List a dir within files", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), size)
-			path := uuid.New().String()
-			err := store.Write(path, r, ps.WithSize(size))
-			if err != nil {
-				t.Error(err)
-			}
-			defer func() {
-				err := store.Delete(path)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			called := false
-			var obj *types.Object
-			fn := types.ObjectFunc(func(o *types.Object) {
-				called = true
-				obj = o
-			})
-
-			err = lister.ListDir("", ps.WithFileFunc(fn))
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-
-			Convey("The file func should be called", func() {
-				So(called, ShouldBeTrue)
-			})
-
-			Convey("The name and size should be match", func() {
-				So(obj, ShouldNotBeNil)
-				So(obj.Name, ShouldEqual, path)
-				So(obj.Size, ShouldEqual, size)
-			})
-		})
-
 	})
 }
