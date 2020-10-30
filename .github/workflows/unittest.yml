@@ -1,0 +1,28 @@
+name: "Unittest"
+
+on: [push,pull_request]
+
+jobs:
+  unitest:
+    name: Unittest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        go: [ "1.14", "1.15" ]
+        os: [linux-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Check
+        run: go vet ./...
+
+      - name: Build
+        run: go build ./...
