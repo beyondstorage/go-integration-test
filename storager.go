@@ -198,7 +198,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When List an empty dir", func() {
-			it, err := store.List("")
+			it, err := store.List("", ps.WithListType(types.ListTypeDir))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -232,7 +232,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			it, err := store.List("")
+			it, err := store.List("", ps.WithListType(types.ListTypeDir))
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
