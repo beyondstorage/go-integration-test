@@ -204,7 +204,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 				So(err, ShouldBeNil)
 			})
 			Convey("The iterator should not be nil", func() {
-				So(it, ShouldNotBeIn)
+				So(it, ShouldNotBeNil)
 			})
 
 			o, err := it.Next()
@@ -237,7 +237,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 				So(err, ShouldBeNil)
 			})
 			Convey("The iterator should not be nil", func() {
-				So(it, ShouldNotBeIn)
+				So(it, ShouldNotBeNil)
 			})
 
 			o, err := it.Next()
