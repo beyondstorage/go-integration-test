@@ -57,7 +57,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 			}
 
 			path := uuid.New().String()
-			_, err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
+			_, err = store.Write(path, bytes.NewReader(content), size)
 			if err != nil {
 				t.Error(err)
 			}
@@ -90,7 +90,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 			r := io.LimitReader(randbytes.NewRand(), size)
 			path := uuid.New().String()
 
-			_, err := store.Write(path, r, ps.WithSize(size))
+			_, err := store.Write(path, r, size)
 
 			defer func() {
 				err := store.Delete(path)
@@ -112,7 +112,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 				Convey("The name and size should be match", func() {
 					So(o, ShouldNotBeNil)
-					So(o.Name, ShouldEqual, path)
+					So(o.Path, ShouldEqual, path)
 
 					osize, ok := o.GetSize()
 					So(ok, ShouldBeTrue)
@@ -143,7 +143,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 			}
 
 			path := uuid.New().String()
-			_, err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
+			_, err = store.Write(path, bytes.NewReader(content), size)
 			if err != nil {
 				t.Error(err)
 			}
@@ -162,7 +162,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 			Convey("The Object name and size should be match", func() {
 				So(o, ShouldNotBeNil)
-				So(o.Name, ShouldEqual, path)
+				So(o.Path, ShouldEqual, path)
 
 				osize, ok := o.GetSize()
 				So(ok, ShouldBeTrue)
@@ -178,7 +178,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 			}
 
 			path := uuid.New().String()
-			_, err = store.Write(path, bytes.NewReader(content), ps.WithSize(size))
+			_, err = store.Write(path, bytes.NewReader(content), size)
 			if err != nil {
 				t.Error(err)
 			}
@@ -198,7 +198,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When List an empty dir", func() {
-			it, err := store.List("", ps.WithListType(types.ListTypeDir))
+			it, err := store.List("", ps.WithListMode(types.ListModeDir))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -221,7 +221,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			r := io.LimitReader(randbytes.NewRand(), size)
 			path := uuid.New().String()
-			_, err := store.Write(path, r, ps.WithSize(size))
+			_, err := store.Write(path, r, size)
 			if err != nil {
 				t.Error(err)
 			}
@@ -232,7 +232,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			it, err := store.List("", ps.WithListType(types.ListTypeDir))
+			it, err := store.List("",  ps.WithListMode(types.ListModeDir))
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
@@ -243,7 +243,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 			o, err := it.Next()
 			Convey("The name and size should be match", func() {
 				So(o, ShouldNotBeNil)
-				So(o.Name, ShouldEqual, path)
+				So(o.Path, ShouldEqual, path)
 
 				osize, ok := o.GetSize()
 				So(ok, ShouldBeTrue)
