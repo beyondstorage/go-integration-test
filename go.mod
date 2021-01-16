@@ -1,4 +1,4 @@
-module github.com/aos-dev/go-integration-test/v2
+module github.com/aos-dev/go-integration-test/v3
 
 go 1.14
 
