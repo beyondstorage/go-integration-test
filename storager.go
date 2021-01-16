@@ -9,10 +9,10 @@ import (
 	"math/rand"
 	"testing"
 
-	ps "github.com/aos-dev/go-storage/v2/pairs"
-	"github.com/aos-dev/go-storage/v2/pkg/randbytes"
-	"github.com/aos-dev/go-storage/v2/services"
-	"github.com/aos-dev/go-storage/v2/types"
+	ps "github.com/aos-dev/go-storage/v3/pairs"
+	"github.com/aos-dev/go-storage/v3/pkg/randbytes"
+	"github.com/aos-dev/go-storage/v3/services"
+	"github.com/aos-dev/go-storage/v3/types"
 	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 )
