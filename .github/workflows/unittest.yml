@@ -21,8 +21,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Check
-        run: go vet ./...
-
       - name: Build
-        run: go build ./...
+        run: make build
