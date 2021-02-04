@@ -114,7 +114,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 					So(o, ShouldNotBeNil)
 					So(o.Path, ShouldEqual, path)
 
-					osize, ok := o.GetSize()
+					osize, ok := o.GetContentLength()
 					So(ok, ShouldBeTrue)
 					So(osize, ShouldEqual, size)
 				})
@@ -164,7 +164,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 				So(o, ShouldNotBeNil)
 				So(o.Path, ShouldEqual, path)
 
-				osize, ok := o.GetSize()
+				osize, ok := o.GetContentLength()
 				So(ok, ShouldBeTrue)
 				So(osize, ShouldEqual, size)
 			})
@@ -245,7 +245,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 				So(o, ShouldNotBeNil)
 				So(o.Path, ShouldEqual, path)
 
-				osize, ok := o.GetSize()
+				osize, ok := o.GetContentLength()
 				So(ok, ShouldBeTrue)
 				So(osize, ShouldEqual, size)
 			})
