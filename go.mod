@@ -7,3 +7,5 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/smartystreets/goconvey v1.6.4
 )
+
+replace github.com/aos-dev/go-storage/v3 => ../go-storage
