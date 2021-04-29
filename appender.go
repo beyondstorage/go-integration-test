@@ -40,10 +40,8 @@ func TestAppender(t *testing.T, store types.Storager) {
 			})
 
 			Convey("The Object Mode should be appendable", func() {
-				// Multipart object's mode must be appendable.
+				// Append object's mode must be appendable.
 				So(o.Mode.IsAppend(), ShouldBeTrue)
-				// Multipart object's mode must be Read.
-				So(o.Mode.IsRead(), ShouldBeTrue)
 			})
 		})
 
@@ -87,12 +85,44 @@ func TestAppender(t *testing.T, store types.Storager) {
 			Convey("WriteAppend error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
-			Convey("WriteAppend size should be nil", func() {
+			Convey("WriteAppend size should be equal to n", func() {
 				So(n, ShouldEqual, size)
+			})
+		})
+
+		Convey("When CommitAppend", func() {
+			ap, _ := store.(types.Appender)
+
+			path := uuid.NewString()
+			o, err := ap.CreateAppend(path)
+			if err != nil {
+				t.Error(err)
+			}
+
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			r := bytes.NewReader(content)
+
+			_, err = ap.WriteAppend(o, r, size)
+			if err != nil {
+				t.Error(err)
+			}
+
+			err = ap.CommitAppend(o)
+
+			Convey("CommitAppend error should be nil", func(){
+				So(err, ShouldBeNil)
 			})
 
 			var buf bytes.Buffer
-			n, err = store.Read(path, &buf, pairs.WithSize(size))
+			_, err = store.Read(path, &buf, pairs.WithSize(size))
 
 			Convey("Read error should be nil", func() {
 				So(err, ShouldBeNil)
