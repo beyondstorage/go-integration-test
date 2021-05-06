@@ -45,21 +45,6 @@ func TestAppender(t *testing.T, store types.Storager) {
 			})
 		})
 
-		Convey("When Delete", func() {
-			ap, _ := store.(types.Appender)
-
-			path := uuid.NewString()
-			_, err := ap.CreateAppend(path)
-			if err != nil {
-				t.Error(err)
-			}
-
-			err = store.Delete(path)
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-		})
-
 		Convey("When Delete twice", func() {
 			ap, _ := store.(types.Appender)
 
@@ -69,12 +54,15 @@ func TestAppender(t *testing.T, store types.Storager) {
 				t.Error(err)
 			}
 
-			for i := 0; i < 2; i++ {
-				err = store.Delete(path)
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-			}
+			err = store.Delete(path)
+			Convey("The first returning error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			err = store.Delete(path)
+			Convey("The second error also should be nil", func() {
+				So(err, ShouldBeNil)
+			})
 		})
 
 		Convey("When WriteAppend", func() {

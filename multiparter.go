@@ -50,21 +50,6 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			})
 		})
 
-		Convey("When Delete with multipart id", func() {
-			m, _ := store.(types.Multiparter)
-
-			path := uuid.New().String()
-			o, err := m.CreateMultipart(path)
-			if err != nil {
-				t.Error(err)
-			}
-
-			err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
-		})
-
 		Convey("When Delete with multipart id twice", func() {
 			m, _ := store.(types.Multiparter)
 
@@ -74,12 +59,15 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 				t.Error(err)
 			}
 
-			for i := 0; i < 2; i++ {
-				err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-			}
+			err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
+			Convey("The first returning error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
+			Convey("The second returning error also should be nil", func() {
+				So(err, ShouldBeNil)
+			})
 		})
 
 		Convey("When Stat with multipart id", func() {

@@ -170,7 +170,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 			})
 		})
 
-		Convey("When Delete a file", func() {
+		Convey("When Delete a file twice", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
@@ -185,45 +185,29 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 			err = store.Delete(path)
 
-			Convey("The error should be nil", func() {
+			Convey("The first returning error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
-			Convey("Stat should get nil Object and ObjectNotFound error", func() {
+			Convey("The first Stat should get nil Object and ObjectNotFound error", func() {
 				o, err := store.Stat(path)
 
 				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
 				So(o, ShouldBeNil)
 			})
-		})
 
-		Convey("When Delete a file twice", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			if err != nil {
-				t.Error(err)
-			}
+			err = store.Delete(path)
 
-			path := uuid.New().String()
-			_, err = store.Write(path, bytes.NewReader(content), size)
-			if err != nil {
-				t.Error(err)
-			}
+			Convey("The second returning error also should be nil", func() {
+				So(err, ShouldBeNil)
+			})
 
-			for i := 0; i < 2; i++ {
-				err = store.Delete(path)
+			Convey("The second Stat also should get nil Object and ObjectNotFound error", func() {
+				o, err := store.Stat(path)
 
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("Stat should get nil Object and ObjectNotFound error", func() {
-					o, err := store.Stat(path)
-
-					So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
-					So(o, ShouldBeNil)
-				})
-			}
+				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
+				So(o, ShouldBeNil)
+			})
 		})
 
 		Convey("When List an empty dir", func() {
