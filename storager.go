@@ -197,6 +197,35 @@ func TestStorager(t *testing.T, store types.Storager) {
 			})
 		})
 
+		Convey("When Delete a file twice", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			if err != nil {
+				t.Error(err)
+			}
+
+			path := uuid.New().String()
+			_, err = store.Write(path, bytes.NewReader(content), size)
+			if err != nil {
+				t.Error(err)
+			}
+
+			for i := 0; i < 2; i++ {
+				err = store.Delete(path)
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("Stat should get nil Object and ObjectNotFound error", func() {
+					o, err := store.Stat(path)
+
+					So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
+					So(o, ShouldBeNil)
+				})
+			}
+		})
+
 		Convey("When List an empty dir", func() {
 			it, err := store.List("", ps.WithListMode(types.ListModeDir))
 
