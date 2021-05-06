@@ -45,7 +45,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 			})
 		})
 
-		Convey("When Delete twice", func() {
+		Convey("When Delete", func() {
 			ap, _ := store.(types.Appender)
 
 			path := uuid.NewString()

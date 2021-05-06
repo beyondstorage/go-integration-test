@@ -50,7 +50,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			})
 		})
 
-		Convey("When Delete with multipart id twice", func() {
+		Convey("When Delete with multipart id", func() {
 			m, _ := store.(types.Multiparter)
 
 			path := uuid.New().String()
