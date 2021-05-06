@@ -185,7 +185,13 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 			err = store.Delete(path)
 
-			Convey("The error should be nil", func() {
+			Convey("The first returning error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			err = store.Delete(path)
+
+			Convey("The second returning error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
