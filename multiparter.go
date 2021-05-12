@@ -164,10 +164,14 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			n, err := m.WriteMultipart(o, r, size, 0)
+			n, part, err := m.WriteMultipart(o, r, size, 0)
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
+			})
+
+			Convey("The part should not be nil", func() {
+				So(part, ShouldNotBeNil)
 			})
 
 			Convey("The size should be match", func() {
@@ -195,7 +199,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			partNumber := rand.Intn(1000)        // Choose a random part number from [0, 1000)
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			_, err = m.WriteMultipart(o, r, size, partNumber)
+			_, _, err = m.WriteMultipart(o, r, size, partNumber)
 			if err != nil {
 				t.Error(err)
 			}
@@ -238,14 +242,12 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			partNumber := rand.Intn(1000)        // Choose a random part number from [0, 1000)
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			_, err = m.WriteMultipart(o, r, size, partNumber)
+			_, part, err := m.WriteMultipart(o, r, size, partNumber)
 			if err != nil {
 				t.Error(err)
 			}
 
-			err = m.CompleteMultipart(o, []*types.Part{
-				{Index: partNumber, Size: size},
-			})
+			err = m.CompleteMultipart(o, []*types.Part{part})
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
