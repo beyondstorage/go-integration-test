@@ -60,7 +60,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 			})
 
 			err = store.Delete(path)
-			Convey("The second error also should be nil", func() {
+			Convey("The second returning error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 		})
