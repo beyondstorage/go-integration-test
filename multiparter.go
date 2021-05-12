@@ -164,10 +164,14 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			r := io.LimitReader(randbytes.NewRand(), size)
 
-			n, _, err := m.WriteMultipart(o, r, size, 0)
+			n, part, err := m.WriteMultipart(o, r, size, 0)
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
+			})
+
+			Convey("The part should not be nil", func() {
+				So(part, ShouldNotBeNil)
 			})
 
 			Convey("The size should be match", func() {
