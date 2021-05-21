@@ -9,12 +9,13 @@ import (
 	"math/rand"
 	"testing"
 
-	ps "github.com/aos-dev/go-storage/v3/pairs"
-	"github.com/aos-dev/go-storage/v3/pkg/randbytes"
-	"github.com/aos-dev/go-storage/v3/services"
-	"github.com/aos-dev/go-storage/v3/types"
 	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
+
+	ps "github.com/beyondstorage/go-storage/v4/pairs"
+	"github.com/beyondstorage/go-storage/v4/pkg/randbytes"
+	"github.com/beyondstorage/go-storage/v4/services"
+	"github.com/beyondstorage/go-storage/v4/types"
 )
 
 func TestStorager(t *testing.T, store types.Storager) {
@@ -38,11 +39,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When Metadata called", func() {
-			m, err := store.Metadata()
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
+			m := store.Metadata()
 
 			Convey("The metadata should not be empty", func() {
 				So(m, ShouldNotBeEmpty)
