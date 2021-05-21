@@ -5,11 +5,12 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/aos-dev/go-storage/v3/pairs"
-	"github.com/aos-dev/go-storage/v3/pkg/randbytes"
-	"github.com/aos-dev/go-storage/v3/types"
 	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
+
+	"github.com/beyondstorage/go-storage/v4/pairs"
+	"github.com/beyondstorage/go-storage/v4/pkg/randbytes"
+	"github.com/beyondstorage/go-storage/v4/types"
 )
 
 func TestMultiparter(t *testing.T, store types.Storager) {
