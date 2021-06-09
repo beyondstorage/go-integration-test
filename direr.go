@@ -1,8 +1,6 @@
 package tests
 
 import (
-	"errors"
-	"github.com/beyondstorage/go-storage/v4/services"
 	"testing"
 
 	"github.com/google/uuid"
@@ -19,7 +17,7 @@ func TestDirer(t *testing.T, store types.Storager) {
 			So(ok, ShouldBeTrue)
 		})
 
-		Convey("When CreateDir with path not end with `/`", func() {
+		Convey("When CreateDir", func() {
 			d, _ := store.(types.Direr)
 
 			path := uuid.New().String()
@@ -44,18 +42,6 @@ func TestDirer(t *testing.T, store types.Storager) {
 			Convey("The Object Mode should be dir", func() {
 				// Dir object's mode must be Dir.
 				So(o.Mode.IsDir(), ShouldBeTrue)
-			})
-		})
-
-		Convey("When CreateDir with path end with `/`", func() {
-			d, _ := store.(types.Direr)
-
-			path := uuid.New().String()
-			path += "/"
-			_, err := d.CreateDir(path)
-
-			Convey("The error should be ErrRestrictionDissatisfied", func() {
-				So(errors.Is(err, services.ErrRestrictionDissatisfied), ShouldBeTrue)
 			})
 		})
 
