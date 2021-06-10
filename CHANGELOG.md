@@ -5,15 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## v3.0.0 - 2021-04-20
+## [v4.1.0] - 2021-06-10
 
 ### Added
 
-- Implement integration test for storager
-- Implement integration test for multiparter
-- Implement integration test for appender
+- storage: Implement Direr tests (#20)
 
-## v4.0.0 - 2021-05-24
+## [v4.0.0] - 2021-05-24
 
 ### Changed
 
@@ -22,5 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - storage: Implement GSP-62 WriteMultipart returns Part (#17)
 - *: Implement GSP-73 Organization Rename (#18)
 
-[Unreleased]: https://github.com/beyondstorage/go-integration-test/compare/v4.0.0...HEAD
+## v3.0.0 - 2021-04-20
+
+### Added
+
+- Implement integration test for storager
+- Implement integration test for multiparter
+- Implement integration test for appender
+
+[v4.1.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.0.0...v4.1.0
 [v4.0.0]: https://github.com/beyondstorage/go-integration-test/compare/v3.0.0...v4.0.0
