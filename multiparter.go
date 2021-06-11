@@ -240,7 +240,8 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			}()
 
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			partNumber := rand.Intn(1000)        // Choose a random part number from [0, 1000)
+			// Set 0 to `partNumber` here as the part numbers must be continuous for `CompleteMultipartUpload` in `cos` which is different with other storages.
+			partNumber := 0
 			r := io.LimitReader(randbytes.NewRand(), size)
 
 			_, part, err := m.WriteMultipart(o, r, size, partNumber)
