@@ -39,6 +39,10 @@ func TestDirer(t *testing.T, store types.Storager) {
 				So(err, ShouldBeNil)
 			})
 
+			Convey("The Object Path should equal to the input path", func() {
+				So(o.Path, ShouldEqual, path)
+			})
+
 			Convey("The Object Mode should be dir", func() {
 				// Dir object's mode must be Dir.
 				So(o.Mode.IsDir(), ShouldBeTrue)
@@ -56,6 +60,10 @@ func TestDirer(t *testing.T, store types.Storager) {
 				}
 			}()
 
+			Convey("The Object Path should equal to the input path", func() {
+				So(o.Path, ShouldEqual, path)
+			})
+			
 			Convey("The Object Mode should be dir", func() {
 				// Dir object's mode must be Dir.
 				So(o.Mode.IsDir(), ShouldBeTrue)
@@ -82,6 +90,10 @@ func TestDirer(t *testing.T, store types.Storager) {
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
+			})
+
+			Convey("The Object Path should equal to the input path", func() {
+				So(o.Path, ShouldEqual, path)
 			})
 
 			Convey("The Object Mode should be dir", func() {
