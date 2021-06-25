@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [v4.2.0] - 2021-06-25
+## [v4.1.1] - 2021-06-25
 
 ### Changed
 
@@ -38,6 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Implement integration test for multiparter
 - Implement integration test for appender
 
-[v4.2.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.1.0...v4.2.0
+[v4.1.1]: https://github.com/beyondstorage/go-integration-test/compare/v4.1.0...v4.1.1
 [v4.1.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.0.0...v4.1.0
 [v4.0.0]: https://github.com/beyondstorage/go-integration-test/compare/v3.0.0...v4.0.0
