@@ -3,8 +3,8 @@ package tests
 import (
 	"bytes"
 	"crypto/md5"
-	"encoding/hex"
 	"io"
+	"io/ioutil"
 	"math/rand"
 	"testing"
 
@@ -26,12 +26,11 @@ func TestMover(t *testing.T, store types.Storager) {
 		Convey("When Move a file", func() {
 			m, _ := store.(types.Mover)
 
-			size := rand.Int63n(4 * 1024 * 1024)
-			r := io.LimitReader(randbytes.NewRand(), size)
-			rMD5Hex := calculateHashFromReader(r)
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			src := uuid.New().String()
 
-			_, err := store.Write(src, r, size)
+			_, err := store.Write(src, bytes.NewReader(content), size)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -73,14 +72,10 @@ func TestMover(t *testing.T, store types.Storager) {
 					So(err, ShouldBeNil)
 				})
 
-				Convey("The size should be equal", func() {
+				Convey("The content should be match", func() {
+					So(buf, ShouldNotBeNil)
 					So(n, ShouldEqual, size)
-				})
-
-				Convey("The hash should be equal", func() {
-					bMD5 := md5.Sum(buf.Bytes())
-					bMD5Hex := hex.EncodeToString(bMD5[:])
-					So(rMD5Hex, ShouldEqual, bMD5Hex)
+					So(md5.Sum(buf.Bytes()), ShouldResemble, md5.Sum(content))
 				})
 			})
 		})
@@ -88,33 +83,32 @@ func TestMover(t *testing.T, store types.Storager) {
 		Convey("When Move to an existing file", func() {
 			m, _ := store.(types.Mover)
 
-			sSize := rand.Int63n(4 * 1024 * 1024)
-			sr := io.LimitReader(randbytes.NewRand(), sSize)
-			rMD5Hex := calculateHashFromReader(sr)
+			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), srcSize))
 			src := uuid.New().String()
 
-			_, err := store.Write(src, sr, sSize)
+			_, err := store.Write(src, bytes.NewReader(content), srcSize)
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			dSize := rand.Int63n(4 * 1024 * 1024)
-			dr := io.LimitReader(randbytes.NewRand(), dSize)
+			dstSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), dstSize)
 			dst := uuid.New().String()
 
-			_, err = store.Write(dst, dr, dSize)
+			_, err = store.Write(dst, r, dstSize)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			defer func() {
-				sErr := store.Delete(src)
-				dErr := store.Delete(dst)
-				if sErr != nil {
-					t.Error(sErr)
+				err = store.Delete(src)
+				if err != nil {
+					t.Error(err)
 				}
-				if dErr != nil {
-					t.Error(dErr)
+				err = store.Delete(dst)
+				if err != nil {
+					t.Error(err)
 				}
 			}()
 
@@ -139,27 +133,11 @@ func TestMover(t *testing.T, store types.Storager) {
 					So(err, ShouldBeNil)
 				})
 
-				Convey("The size should be equal", func() {
-					So(n, ShouldEqual, sSize)
+				Convey("The content should be match", func() {
+					So(buf, ShouldNotBeNil)
+					So(n, ShouldEqual, srcSize)
+					So(md5.Sum(buf.Bytes()), ShouldResemble, md5.Sum(content))
 				})
-
-				Convey("The hash should be equal", func() {
-					bMD5 := md5.Sum(buf.Bytes())
-					bMD5Hex := hex.EncodeToString(bMD5[:])
-					So(rMD5Hex, ShouldEqual, bMD5Hex)
-				})
-			})
-		})
-
-		Convey("When Move a non-existent file", func() {
-			m, _ := store.(types.Mover)
-
-			src := uuid.New().String()
-			dst := uuid.New().String()
-
-			err := m.Move(src, dst)
-			Convey("The error should be ErrObjectNotExist", func() {
-				So(err, ShouldEqual, services.ErrObjectNotExist)
 			})
 		})
 	})
