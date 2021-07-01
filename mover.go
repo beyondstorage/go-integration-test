@@ -3,6 +3,7 @@ package tests
 import (
 	"bytes"
 	"crypto/md5"
+	"errors"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -60,7 +61,7 @@ func TestMover(t *testing.T, store types.Storager) {
 				_, err := store.Stat(src)
 
 				Convey("The error should be ErrObjectNotExist", func() {
-					So(err, ShouldEqual, services.ErrObjectNotExist)
+					So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
 				})
 			})
 
@@ -121,7 +122,7 @@ func TestMover(t *testing.T, store types.Storager) {
 				_, err := store.Stat(src)
 
 				Convey("The error should be ErrObjectNotExist", func() {
-					So(err, ShouldEqual, services.ErrObjectNotExist)
+					So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
 				})
 			})
 
