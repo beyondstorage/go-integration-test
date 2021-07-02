@@ -12,10 +12,8 @@ import (
 
 func TestDirer(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		Convey("The Storager should implement Direr", func() {
-			_, ok := store.(types.Direr)
-			So(ok, ShouldBeTrue)
-		})
+		_, ok := store.(types.Direr)
+		So(ok, ShouldBeTrue)
 
 		Convey("When CreateDir", func() {
 			d, _ := store.(types.Direr)
@@ -63,7 +61,7 @@ func TestDirer(t *testing.T, store types.Storager) {
 			Convey("The Object Path should equal to the input path", func() {
 				So(o.Path, ShouldEqual, path)
 			})
-			
+
 			Convey("The Object Mode should be dir", func() {
 				// Dir object's mode must be Dir.
 				So(o.Mode.IsDir(), ShouldBeTrue)

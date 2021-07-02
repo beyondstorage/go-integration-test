@@ -22,9 +22,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
 		var err error
 
-		Convey("The Storager should not be nil", func() {
-			So(store, ShouldNotBeNil)
-		})
+		So(store, ShouldNotBeNil)
 
 		Convey("The error should be nil", func() {
 			So(err, ShouldBeNil)
@@ -235,7 +233,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			it, err := store.List("",  ps.WithListMode(types.ListModeDir))
+			it, err := store.List("", ps.WithListMode(types.ListModeDir))
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
 			})

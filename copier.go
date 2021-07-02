@@ -17,10 +17,8 @@ import (
 
 func TestCopier(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		Convey("The Storager should implement Copier", func() {
-			_, ok := store.(types.Copier)
-			So(ok, ShouldBeTrue)
-		})
+		_, ok := store.(types.Copier)
+		So(ok, ShouldBeTrue)
 
 		Convey("When Copy a file", func() {
 			c, _ := store.(types.Copier)

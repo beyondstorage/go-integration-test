@@ -19,10 +19,8 @@ import (
 
 func TestMover(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		Convey("The Storager should implement Mover", func() {
-			_, ok := store.(types.Mover)
-			So(ok, ShouldBeTrue)
-		})
+		_, ok := store.(types.Mover)
+		So(ok, ShouldBeTrue)
 
 		Convey("When Move a file", func() {
 			m, _ := store.(types.Mover)

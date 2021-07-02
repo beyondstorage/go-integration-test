@@ -15,10 +15,8 @@ import (
 
 func TestMultiparter(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		Convey("The Storager should implement Multiparter", func() {
-			_, ok := store.(types.Multiparter)
-			So(ok, ShouldBeTrue)
-		})
+		_, ok := store.(types.Multiparter)
+		So(ok, ShouldBeTrue)
 
 		Convey("When CreateMultipart", func() {
 			m, _ := store.(types.Multiparter)
