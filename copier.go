@@ -17,14 +17,10 @@ import (
 
 func TestCopier(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		Convey("The Storager should implement Copier", func() {
-			_, ok := store.(types.Copier)
-			So(ok, ShouldBeTrue)
-		})
+		c, ok := store.(types.Copier)
+		So(ok, ShouldBeTrue)
 
 		Convey("When Copy a file", func() {
-			c, _ := store.(types.Copier)
-
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			src := uuid.New().String()

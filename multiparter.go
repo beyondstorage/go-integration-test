@@ -15,14 +15,10 @@ import (
 
 func TestMultiparter(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		Convey("The Storager should implement Multiparter", func() {
-			_, ok := store.(types.Multiparter)
-			So(ok, ShouldBeTrue)
-		})
+		m, ok := store.(types.Multiparter)
+		So(ok, ShouldBeTrue)
 
 		Convey("When CreateMultipart", func() {
-			m, _ := store.(types.Multiparter)
-
 			path := uuid.New().String()
 			o, err := m.CreateMultipart(path)
 
@@ -52,8 +48,6 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When Delete with multipart id", func() {
-			m, _ := store.(types.Multiparter)
-
 			path := uuid.New().String()
 			o, err := m.CreateMultipart(path)
 			if err != nil {
@@ -72,8 +66,6 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When Stat with multipart id", func() {
-			m, _ := store.(types.Multiparter)
-
 			path := uuid.New().String()
 			o, err := m.CreateMultipart(path)
 			if err != nil {
@@ -112,8 +104,6 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When Create with multipart id", func() {
-			m, _ := store.(types.Multiparter)
-
 			path := uuid.New().String()
 			o, err := m.CreateMultipart(path)
 			if err != nil {
@@ -147,8 +137,6 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When WriteMultipart", func() {
-			m, _ := store.(types.Multiparter)
-
 			path := uuid.New().String()
 			o, err := m.CreateMultipart(path)
 			if err != nil {
@@ -181,8 +169,6 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When ListMultiPart", func() {
-			m, _ := store.(types.Multiparter)
-
 			path := uuid.New().String()
 			o, err := m.CreateMultipart(path)
 			if err != nil {
@@ -224,8 +210,6 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When CompletePart", func() {
-			m, _ := store.(types.Multiparter)
-
 			path := uuid.New().String()
 			o, err := m.CreateMultipart(path)
 			if err != nil {
