@@ -19,12 +19,10 @@ import (
 
 func TestMover(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		_, ok := store.(types.Mover)
+		m, ok := store.(types.Mover)
 		So(ok, ShouldBeTrue)
 
 		Convey("When Move a file", func() {
-			m, _ := store.(types.Mover)
-
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			src := uuid.New().String()

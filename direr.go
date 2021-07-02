@@ -12,12 +12,10 @@ import (
 
 func TestDirer(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		_, ok := store.(types.Direr)
+		d, ok := store.(types.Direr)
 		So(ok, ShouldBeTrue)
 
 		Convey("When CreateDir", func() {
-			d, _ := store.(types.Direr)
-
 			path := uuid.New().String()
 			o, err := d.CreateDir(path)
 
@@ -69,8 +67,6 @@ func TestDirer(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When Stat with ModeDir", func() {
-			d, _ := store.(types.Direr)
-
 			path := uuid.New().String()
 			_, err := d.CreateDir(path)
 			if err != nil {
@@ -101,8 +97,6 @@ func TestDirer(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When Delete with ModeDir", func() {
-			d, _ := store.(types.Direr)
-
 			path := uuid.New().String()
 			_, err := d.CreateDir(path)
 			if err != nil {

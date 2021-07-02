@@ -18,12 +18,10 @@ import (
 
 func TestAppender(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		_, ok := store.(types.Appender)
+		ap, ok := store.(types.Appender)
 		So(ok, ShouldBeTrue)
 
 		Convey("When CreateAppend", func() {
-			ap, _ := store.(types.Appender)
-
 			path := uuid.NewString()
 			o, err := ap.CreateAppend(path)
 
@@ -45,8 +43,6 @@ func TestAppender(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When Delete", func() {
-			ap, _ := store.(types.Appender)
-
 			path := uuid.NewString()
 			_, err := ap.CreateAppend(path)
 			if err != nil {
@@ -65,8 +61,6 @@ func TestAppender(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When WriteAppend", func() {
-			ap, _ := store.(types.Appender)
-
 			path := uuid.NewString()
 			o, err := ap.CreateAppend(path)
 			if err != nil {
@@ -95,8 +89,6 @@ func TestAppender(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When CommitAppend", func() {
-			ap, _ := store.(types.Appender)
-
 			path := uuid.NewString()
 			o, err := ap.CreateAppend(path)
 			if err != nil {
