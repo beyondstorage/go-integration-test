@@ -20,13 +20,7 @@ import (
 
 func TestStorager(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		var err error
-
 		So(store, ShouldNotBeNil)
-
-		Convey("The error should be nil", func() {
-			So(err, ShouldBeNil)
-		})
 
 		Convey("When String called", func() {
 			s := store.String()
