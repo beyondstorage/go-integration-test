@@ -137,40 +137,40 @@ func TestMover(t *testing.T, store types.Storager) {
 			})
 		})
 
-		Convey("When Move to an existing dir", func() {
-			d, ok := store.(types.Direr)
-			So(ok, ShouldBeTrue)
+		if d, ok := store.(types.Direr); ok {
+			Convey("When Move to an existing dir", func() {
 
-			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), srcSize)
-			src := uuid.New().String()
+				srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+				r := io.LimitReader(randbytes.NewRand(), srcSize)
+				src := uuid.New().String()
 
-			_, err := store.Write(src, r, srcSize)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			dst := uuid.New().String()
-			_, err = d.CreateDir(dst)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			defer func() {
-				err = store.Delete(src)
+				_, err := store.Write(src, r, srcSize)
 				if err != nil {
-					t.Error(err)
+					t.Fatal(err)
 				}
-				err = store.Delete(dst, pairs.WithObjectMode(types.ModeDir))
-				if err != nil {
-					t.Error(err)
-				}
-			}()
 
-			err = m.Move(src, dst)
-			Convey("The error should be ErrObjectModeInvalid", func() {
-				So(errors.Is(err, services.ErrObjectModeInvalid), ShouldBeTrue)
+				dst := uuid.New().String()
+				_, err = d.CreateDir(dst)
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				defer func() {
+					err = store.Delete(src)
+					if err != nil {
+						t.Error(err)
+					}
+					err = store.Delete(dst, pairs.WithObjectMode(types.ModeDir))
+					if err != nil {
+						t.Error(err)
+					}
+				}()
+
+				err = m.Move(src, dst)
+				Convey("The error should be ErrObjectModeInvalid", func() {
+					So(errors.Is(err, services.ErrObjectModeInvalid), ShouldBeTrue)
+				})
 			})
-		})
+		}
 	})
 }

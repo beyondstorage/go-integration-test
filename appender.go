@@ -75,6 +75,10 @@ func TestAppender(t *testing.T, store types.Storager) {
 				// Append object's mode must be appendable.
 				So(o.Mode.IsAppend(), ShouldBeTrue)
 			})
+
+			Convey("The object append offset should be 0", func() {
+				So(o.MustGetAppendOffset(), ShouldBeZeroValue)
+			})
 		})
 
 		Convey("When Delete", func() {
