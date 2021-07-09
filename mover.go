@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	. "github.com/smartystreets/goconvey/convey"
 
+	"github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/pkg/randbytes"
 	"github.com/beyondstorage/go-storage/v4/services"
 	"github.com/beyondstorage/go-storage/v4/types"
@@ -74,6 +75,101 @@ func TestMover(t *testing.T, store types.Storager) {
 					So(n, ShouldEqual, size)
 					So(md5.Sum(buf.Bytes()), ShouldResemble, md5.Sum(content))
 				})
+			})
+		})
+
+		Convey("When Move to an existing file", func() {
+			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), srcSize))
+			src := uuid.New().String()
+
+			_, err := store.Write(src, bytes.NewReader(content), srcSize)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			dstSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), dstSize)
+			dst := uuid.New().String()
+
+			_, err = store.Write(dst, r, dstSize)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer func() {
+				err = store.Delete(src)
+				if err != nil {
+					t.Error(err)
+				}
+				err = store.Delete(dst)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			err = m.Move(src, dst)
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Stat should get src object not exist", func() {
+				_, err := store.Stat(src)
+
+				Convey("The error should be ErrObjectNotExist", func() {
+					So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
+				})
+			})
+
+			Convey("Read should get dst object data without error", func() {
+				var buf bytes.Buffer
+				n, err := store.Read(dst, &buf)
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The content should be match", func() {
+					So(buf, ShouldNotBeNil)
+					So(n, ShouldEqual, srcSize)
+					So(md5.Sum(buf.Bytes()), ShouldResemble, md5.Sum(content))
+				})
+			})
+		})
+
+		Convey("When Move to an existing dir", func() {
+			d, ok := store.(types.Direr)
+			So(ok, ShouldBeTrue)
+
+			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), srcSize)
+			src := uuid.New().String()
+
+			_, err := store.Write(src, r, srcSize)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			dst := uuid.New().String()
+			_, err = d.CreateDir(dst)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer func() {
+				err = store.Delete(src)
+				if err != nil {
+					t.Error(err)
+				}
+				err = store.Delete(dst, pairs.WithObjectMode(types.ModeDir))
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			err = m.Move(src, dst)
+			Convey("The error should be ErrObjectModeInvalid", func() {
+				So(errors.Is(err, services.ErrObjectModeInvalid), ShouldBeTrue)
 			})
 		})
 	})

@@ -42,6 +42,41 @@ func TestAppender(t *testing.T, store types.Storager) {
 			})
 		})
 
+		Convey("When CreateAppend with an existing appendable object", func() {
+			path := uuid.NewString()
+			o, err := ap.CreateAppend(path)
+
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			Convey("The first returning error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), size)
+
+			_, err = ap.WriteAppend(o, r, size)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			o, err = ap.CreateAppend(path)
+
+			Convey("The second returning error also should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The Object Mode should be appendable", func() {
+				// Append object's mode must be appendable.
+				So(o.Mode.IsAppend(), ShouldBeTrue)
+			})
+		})
+
 		Convey("When Delete", func() {
 			path := uuid.NewString()
 			_, err := ap.CreateAppend(path)
