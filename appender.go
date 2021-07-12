@@ -42,7 +42,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 			})
 		})
 
-		Convey("When CreateAppend with an existing appendable object", func() {
+		Convey("When CreateAppend with an existing object", func() {
 			path := uuid.NewString()
 			o, err := ap.CreateAppend(path)
 
@@ -53,7 +53,7 @@ func TestAppender(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			Convey("The first returning error should be nil", func() {
+			Convey("The first returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
@@ -65,9 +65,14 @@ func TestAppender(t *testing.T, store types.Storager) {
 				t.Fatal(err)
 			}
 
+			err = ap.CommitAppend(o)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			o, err = ap.CreateAppend(path)
 
-			Convey("The second returning error also should be nil", func() {
+			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
@@ -79,6 +84,10 @@ func TestAppender(t *testing.T, store types.Storager) {
 			Convey("The object append offset should be 0", func() {
 				So(o.MustGetAppendOffset(), ShouldBeZeroValue)
 			})
+
+			Convey("The object size should be 0", func() {
+				So(o.MustGetContentLength(), ShouldBeZeroValue)
+			})
 		})
 
 		Convey("When Delete", func() {
@@ -89,12 +98,12 @@ func TestAppender(t *testing.T, store types.Storager) {
 			}
 
 			err = store.Delete(path)
-			Convey("The first returning error should be nil", func() {
+			Convey("The first returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			err = store.Delete(path)
-			Convey("The second returning error also should be nil", func() {
+			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 		})
@@ -167,5 +176,4 @@ func TestAppender(t *testing.T, store types.Storager) {
 			})
 		})
 	})
-
 }

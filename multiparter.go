@@ -22,7 +22,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			path := uuid.New().String()
 			o, err := m.CreateMultipart(path)
 
-			Convey("The first returning error should be nil", func() {
+			Convey("The first returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
@@ -35,7 +35,7 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 
 			o, err = m.CreateMultipart(path)
 
-			Convey("The second returning error also should be nil", func() {
+			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
@@ -68,12 +68,12 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			}
 
 			err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
-			Convey("The first returning error should be nil", func() {
+			Convey("The first returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
-			Convey("The second returning error also should be nil", func() {
+			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 		})

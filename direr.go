@@ -26,12 +26,12 @@ func TestDirer(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			Convey("The first returning error should be nil", func() {
+			Convey("The first returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			o, err = d.CreateDir(path)
-			Convey("The second returning error also should be nil", func() {
+			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
@@ -104,12 +104,12 @@ func TestDirer(t *testing.T, store types.Storager) {
 			}
 
 			err = store.Delete(path, pairs.WithObjectMode(types.ModeDir))
-			Convey("The first returning error should be nil", func() {
+			Convey("The first returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			err = store.Delete(path, pairs.WithObjectMode(types.ModeDir))
-			Convey("The second returning error also should be nil", func() {
+			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 		})

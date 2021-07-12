@@ -80,6 +80,13 @@ func TestCopier(t *testing.T, store types.Storager) {
 				t.Fatal(err)
 			}
 
+			defer func() {
+				err = store.Delete(src)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
 			dstSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			r := io.LimitReader(randbytes.NewRand(), dstSize)
 			dst := uuid.New().String()
@@ -90,10 +97,6 @@ func TestCopier(t *testing.T, store types.Storager) {
 			}
 
 			defer func() {
-				err = store.Delete(src)
-				if err != nil {
-					t.Error(err)
-				}
 				err = store.Delete(dst)
 				if err != nil {
 					t.Error(err)
@@ -132,6 +135,13 @@ func TestCopier(t *testing.T, store types.Storager) {
 					 t.Fatal(err)
 				 }
 
+				 defer func() {
+					 err = store.Delete(src)
+					 if err != nil {
+						 t.Error(err)
+					 }
+				 }()
+
 				 dst := uuid.New().String()
 				 _, err = d.CreateDir(dst)
 				 if err != nil {
@@ -139,10 +149,6 @@ func TestCopier(t *testing.T, store types.Storager) {
 				 }
 
 				 defer func() {
-					 err = store.Delete(src)
-					 if err != nil {
-						 t.Error(err)
-					 }
 					 err = store.Delete(dst, pairs.WithObjectMode(types.ModeDir))
 					 if err != nil {
 						 t.Error(err)
