@@ -22,16 +22,29 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			path := uuid.New().String()
 			o, err := m.CreateMultipart(path)
 
+			Convey("The first returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			defer func(multipartID string) {
+				err := store.Delete(path, pairs.WithMultipartID(multipartID))
+				if err != nil {
+					t.Error(err)
+				}
+			}(o.MustGetMultipartID())
+
+			o, err = m.CreateMultipart(path)
+
+			Convey("The second returned error also should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
 			defer func() {
 				err := store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
 				if err != nil {
 					t.Error(err)
 				}
 			}()
-
-			Convey("The error should be nil", func() {
-				So(err, ShouldBeNil)
-			})
 
 			Convey("The Object Mode should be part", func() {
 				// Multipart object's mode must be Part.
@@ -55,12 +68,12 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			}
 
 			err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
-			Convey("The first returning error should be nil", func() {
+			Convey("The first returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			err = store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
-			Convey("The second returning error also should be nil", func() {
+			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 		})

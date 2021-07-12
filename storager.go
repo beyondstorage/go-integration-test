@@ -75,11 +75,11 @@ func TestStorager(t *testing.T, store types.Storager) {
 		})
 
 		Convey("When Write a file", func() {
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), size)
+			firstSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), firstSize)
 			path := uuid.New().String()
 
-			_, err := store.Write(path, r, size)
+			_, err := store.Write(path, r, firstSize)
 
 			defer func() {
 				err := store.Delete(path)
@@ -88,7 +88,16 @@ func TestStorager(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			Convey("The error should be nil", func() {
+			Convey("The first returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			secondSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), secondSize))
+
+			_, err = store.Write(path, bytes.NewReader(content), secondSize)
+
+			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
@@ -105,7 +114,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 					osize, ok := o.GetContentLength()
 					So(ok, ShouldBeTrue)
-					So(osize, ShouldEqual, size)
+					So(osize, ShouldEqual, secondSize)
 				})
 			})
 
@@ -117,8 +126,11 @@ func TestStorager(t *testing.T, store types.Storager) {
 					So(err, ShouldBeNil)
 				})
 
-				Convey("The size should be equal", func() {
-					So(n, ShouldEqual, size)
+				Convey("The content should be match", func() {
+					So(buf, ShouldNotBeNil)
+
+					So(n, ShouldEqual, secondSize)
+					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
 				})
 			})
 
@@ -174,13 +186,13 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 			err = store.Delete(path)
 
-			Convey("The first returning error should be nil", func() {
+			Convey("The first returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
 			err = store.Delete(path)
 
-			Convey("The second returning error also should be nil", func() {
+			Convey("The second returned error also should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
