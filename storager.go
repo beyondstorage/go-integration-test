@@ -257,5 +257,39 @@ func TestStorager(t *testing.T, store types.Storager) {
 				So(osize, ShouldEqual, size)
 			})
 		})
+
+		Convey("When List without ListMode", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), size)
+			path := uuid.New().String()
+			_, err := store.Write(path, r, size)
+			if err != nil {
+				t.Error(err)
+			}
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			it, err := store.List("")
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+			Convey("The iterator should not be nil", func() {
+				So(it, ShouldNotBeNil)
+			})
+
+			o, err := it.Next()
+			Convey("The name and size should be match", func() {
+				So(o, ShouldNotBeNil)
+				So(o.Path, ShouldEqual, path)
+
+				osize, ok := o.GetContentLength()
+				So(ok, ShouldBeTrue)
+				So(osize, ShouldEqual, size)
+			})
+		})
 	})
 }

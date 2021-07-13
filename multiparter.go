@@ -214,11 +214,58 @@ func TestMultiparter(t *testing.T, store types.Storager) {
 			p, err := it.Next()
 			Convey("Next error should be nil", func() {
 				So(err, ShouldBeNil)
-				So(it, ShouldNotBeNil)
+				So(p, ShouldNotBeNil)
 			})
 			Convey("The part number and size should be match", func() {
 				So(p.Index, ShouldEqual, partNumber)
 				So(p.Size, ShouldEqual, size)
+			})
+		})
+
+		Convey("When List with part type", func() {
+			path := uuid.New().String()
+			o, err := m.CreateMultipart(path)
+			if err != nil {
+				t.Error(err)
+			}
+
+			defer func() {
+				err := store.Delete(path, pairs.WithMultipartID(o.MustGetMultipartID()))
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			partNumber := rand.Intn(1000)        // Choose a random part number from [0, 1000)
+			r := io.LimitReader(randbytes.NewRand(), size)
+
+			_, _, err = m.WriteMultipart(o, r, size, partNumber)
+			if err != nil {
+				t.Error(err)
+			}
+
+			it, err := store.List("", pairs.WithListMode(types.ListModePart))
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+			Convey("The iterator should not be nil", func() {
+				So(it, ShouldNotBeNil)
+			})
+
+			mo, err := it.Next()
+			Convey("Next error should be nil", func() {
+				So(err, ShouldBeNil)
+				So(mo, ShouldNotBeNil)
+			})
+			Convey("The path and multipart id should be match", func() {
+				So(mo.Path, ShouldEqual, path)
+				So(mo.Mode.IsPart(), ShouldBeTrue)
+
+				// Multipart object must have multipart id.
+				mid, ok := mo.GetMultipartID()
+				So(ok, ShouldBeTrue)
+				So(mid, ShouldEqual, o.MustGetMultipartID())
 			})
 		})
 
