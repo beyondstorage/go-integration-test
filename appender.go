@@ -84,10 +84,6 @@ func TestAppender(t *testing.T, store types.Storager) {
 			Convey("The object append offset should be 0", func() {
 				So(o.MustGetAppendOffset(), ShouldBeZeroValue)
 			})
-
-			Convey("The object size should be 0", func() {
-				So(o.MustGetContentLength(), ShouldBeZeroValue)
-			})
 		})
 
 		Convey("When Delete", func() {
