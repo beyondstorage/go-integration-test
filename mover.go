@@ -147,7 +147,7 @@ func TestMoverWithDir(t *testing.T, store types.Storager) {
 		m, ok := store.(types.Mover)
 		So(ok, ShouldBeTrue)
 
-		d, _ := store.(types.Direr)
+		d := store.(types.Direr)
 
 		Convey("When Move to an existing dir", func() {
 
@@ -193,7 +193,7 @@ func TestMoverWithVirtualDir(t *testing.T, store types.Storager) {
 		m, ok := store.(types.Mover)
 		So(ok, ShouldBeTrue)
 
-		d, _ := store.(types.Direr)
+		d := store.(types.Direr)
 
 		Convey("When Move to an existing dir", func() {
 

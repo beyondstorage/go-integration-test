@@ -176,7 +176,7 @@ func TestCopierWithVirtualDir(t *testing.T, store types.Storager) {
 		c, ok := store.(types.Copier)
 		So(ok, ShouldBeTrue)
 
-		d, _ := store.(types.Direr)
+		d := store.(types.Direr)
 
 		Convey("When Copy to an existing dir", func() {
 			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
