@@ -143,125 +143,121 @@ func TestMover(t *testing.T, store types.Storager) {
 }
 
 func TestMoverWithDir(t *testing.T, store types.Storager) {
-	TestMover(t, store)
+	Convey("Given a basic Storager", t, func() {
+		m, ok := store.(types.Mover)
+		So(ok, ShouldBeTrue)
 
-	if d, ok := store.(types.Direr); ok {
-		Convey("Given a basic Storager", t, func() {
-			m, ok := store.(types.Mover)
-			So(ok, ShouldBeTrue)
+		d, _ := store.(types.Direr)
 
-			Convey("When Move to an existing dir", func() {
+		Convey("When Move to an existing dir", func() {
 
-				srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-				r := io.LimitReader(randbytes.NewRand(), srcSize)
-				src := uuid.New().String()
+			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), srcSize)
+			src := uuid.New().String()
 
-				_, err := store.Write(src, r, srcSize)
+			_, err := store.Write(src, r, srcSize)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer func() {
+				err = store.Delete(src)
 				if err != nil {
-					t.Fatal(err)
+					t.Error(err)
 				}
+			}()
 
-				defer func() {
-					err = store.Delete(src)
-					if err != nil {
-						t.Error(err)
-					}
-				}()
+			dst := uuid.New().String()
+			_, err = d.CreateDir(dst)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-				dst := uuid.New().String()
-				_, err = d.CreateDir(dst)
+			defer func() {
+				err = store.Delete(dst, pairs.WithObjectMode(types.ModeDir))
 				if err != nil {
-					t.Fatal(err)
+					t.Error(err)
 				}
+			}()
 
-				defer func() {
-					err = store.Delete(dst, pairs.WithObjectMode(types.ModeDir))
-					if err != nil {
-						t.Error(err)
-					}
-				}()
-
-				err = m.Move(src, dst)
-				Convey("The error should be ErrObjectModeInvalid", func() {
-					So(errors.Is(err, services.ErrObjectModeInvalid), ShouldBeTrue)
-				})
+			err = m.Move(src, dst)
+			Convey("The error should be ErrObjectModeInvalid", func() {
+				So(errors.Is(err, services.ErrObjectModeInvalid), ShouldBeTrue)
 			})
 		})
-	}
+	})
 }
 
 func TestMoverWithVirtualDir(t *testing.T, store types.Storager) {
-	TestMover(t, store)
+	Convey("Given a basic Storager", t, func() {
+		m, ok := store.(types.Mover)
+		So(ok, ShouldBeTrue)
 
-	if d, ok := store.(types.Direr); ok {
-		Convey("Given a basic Storager", t, func() {
-			m, ok := store.(types.Mover)
-			So(ok, ShouldBeTrue)
+		d, _ := store.(types.Direr)
 
-			Convey("When Move to an existing dir", func() {
+		Convey("When Move to an existing dir", func() {
 
-				srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-				r := io.LimitReader(randbytes.NewRand(), srcSize)
-				src := uuid.New().String()
+			srcSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), srcSize)
+			src := uuid.New().String()
 
-				_, err := store.Write(src, r, srcSize)
+			_, err := store.Write(src, r, srcSize)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer func() {
+				err = store.Delete(src)
 				if err != nil {
-					t.Fatal(err)
+					t.Error(err)
 				}
+			}()
 
-				defer func() {
-					err = store.Delete(src)
-					if err != nil {
-						t.Error(err)
-					}
-				}()
+			dst := uuid.New().String()
+			_, err = d.CreateDir(dst)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-				dst := uuid.New().String()
-				_, err = d.CreateDir(dst)
+			defer func() {
+				err = store.Delete(dst, pairs.WithObjectMode(types.ModeDir))
 				if err != nil {
-					t.Fatal(err)
+					t.Error(err)
 				}
+			}()
 
-				defer func() {
-					err = store.Delete(dst, pairs.WithObjectMode(types.ModeDir))
-					if err != nil {
-						t.Error(err)
-					}
-				}()
+			err = m.Move(src, dst)
 
-				err = m.Move(src, dst)
+			defer func() {
+				err = store.Delete(dst)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
 
-				defer func() {
-					err = store.Delete(dst)
-					if err != nil {
-						t.Error(err)
-					}
-				}()
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
 
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
+			Convey("Stat should get dst object without error", func() {
+				o, err := store.Stat(dst)
+
+				So(err, ShouldBeNil)
+				So(o, ShouldNotBeNil)
+
+				Convey("The Object Mode should be read", func() {
+					So(o.Mode.IsRead(), ShouldBeTrue)
 				})
 
-				Convey("Stat should get dst object without error", func() {
-					o, err := store.Stat(dst)
-
-					So(err, ShouldBeNil)
+				Convey("The path and size should be match", func() {
 					So(o, ShouldNotBeNil)
+					So(o.Path, ShouldEqual, dst)
 
-					Convey("The Object Mode should be read", func() {
-						So(o.Mode.IsRead(), ShouldBeTrue)
-					})
-
-					Convey("The path and size should be match", func() {
-						So(o, ShouldNotBeNil)
-						So(o.Path, ShouldEqual, dst)
-
-						osize, ok := o.GetContentLength()
-						So(ok, ShouldBeTrue)
-						So(osize, ShouldEqual, srcSize)
-					})
+					osize, ok := o.GetContentLength()
+					So(ok, ShouldBeTrue)
+					So(osize, ShouldEqual, srcSize)
 				})
 			})
 		})
-	}
+	})
 }
