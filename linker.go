@@ -3,6 +3,9 @@ package tests
 import (
 	"bytes"
 	"crypto/md5"
+	"errors"
+	"github.com/beyondstorage/go-storage/v4/pairs"
+	"github.com/beyondstorage/go-storage/v4/services"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -160,7 +163,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 				})
 
 				Convey("The content should be match", func() {
-					So(n, ShouldNotBeNil)
+					So(buf, ShouldNotBeNil)
 					So(n, ShouldEqual, size)
 					So(md5.Sum(buf.Bytes()), ShouldResemble, md5.Sum(content))
 				})
@@ -243,9 +246,139 @@ func TestLinker(t *testing.T, store types.Storager) {
 
 				Convey("The content should be match", func() {
 					// The content should match the secondTarget
-					So(n, ShouldNotBeNil)
+					So(buf, ShouldNotBeNil)
 					So(n, ShouldEqual, secondSize)
 					So(md5.Sum(buf.Bytes()), ShouldResemble, md5.Sum(secondContent))
+				})
+			})
+		})
+	})
+}
+
+func TestLinkerWithLink(t *testing.T, store types.Storager) {
+	Convey("Given a basic Storager", func() {
+		l, ok := store.(types.Linker)
+		So(ok, ShouldBeTrue)
+
+		d := store.(types.Direr)
+
+		Convey("When CreateLink to an existing dir", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), size)
+			target := uuid.New().String()
+
+			_, err := store.Write(target, r, size)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer func() {
+				err = store.Delete(target)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			path := uuid.New().String()
+			_, err = d.CreateDir(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer func() {
+				err = store.Delete(path, pairs.WithObjectMode(types.ModeDir))
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			o, err := l.CreateLink(path, target)
+
+			Convey("The error should be ErrObjectModeInvalid", func() {
+				So(errors.Is(err, services.ErrObjectModeInvalid), ShouldBeTrue)
+			})
+
+			Convey("The object should be nil", func() {
+				So(o, ShouldBeNil)
+			})
+		})
+	})
+}
+
+func TestLinkerWithVirtualLink(t *testing.T, store types.Storager) {
+	Convey("Given a basic Storager", func() {
+		l, ok := store.(types.Linker)
+		So(ok, ShouldBeTrue)
+
+		d := store.(types.Direr)
+
+		Convey("When CreateLink to an existing dir", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), size)
+			target := uuid.New().String()
+
+			_, err := store.Write(target, r, size)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer func() {
+				err = store.Delete(target)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			path := uuid.New().String()
+			_, err = d.CreateDir(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			defer func() {
+				err = store.Delete(path, pairs.WithObjectMode(types.ModeDir))
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			o, err := l.CreateLink(path, target)
+
+			defer func() {
+				err = store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The object mode should be link", func() {
+				// Link object's mode must be link.
+				So(o.Mode.IsLink(), ShouldBeTrue)
+			})
+
+			Convey("The linkTarget should be the same as the target", func() {
+				linkTarget, ok := o.GetLinkTarget()
+
+				So(ok, ShouldBeTrue)
+				So(linkTarget, ShouldEqual, target)
+			})
+
+			Convey("Stat should get path object without error", func() {
+				obj, err := store.Stat(path)
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The linkTarget must be the same as the target", func() {
+					linkTarget, ok := obj.GetLinkTarget()
+
+					So(ok, ShouldBeTrue)
+					So(linkTarget, ShouldEqual, target)
 				})
 			})
 		})
