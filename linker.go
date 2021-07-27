@@ -1,9 +1,7 @@
 package tests
 
 import (
-	"bytes"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"testing"
 
@@ -138,10 +136,10 @@ func TestLinker(t *testing.T, store types.Storager) {
 
 		Convey("When CreateLink to an existing path", func() {
 			firstSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			r := io.LimitReader(randbytes.NewRand(), firstSize)
+			firstR := io.LimitReader(randbytes.NewRand(), firstSize)
 			firstTarget := uuid.New().String()
 
-			_, err := store.Write(firstTarget, r, firstSize)
+			_, err := store.Write(firstTarget, firstR, firstSize)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -168,10 +166,10 @@ func TestLinker(t *testing.T, store types.Storager) {
 			})
 
 			secondSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			secondContent, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), secondSize))
+			secondR := io.LimitReader(randbytes.NewRand(), secondSize)
 			secondTarget := uuid.New().String()
 
-			_, err = store.Write(secondTarget, bytes.NewReader(secondContent), secondSize)
+			_, err = store.Write(secondTarget, secondR, secondSize)
 			if err != nil {
 				t.Fatal(err)
 			}
