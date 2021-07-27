@@ -2,7 +2,6 @@ package tests
 
 import (
 	"bytes"
-	"crypto/md5"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -135,36 +134,6 @@ func TestLinker(t *testing.T, store types.Storager) {
 					So(linkTarget, ShouldEqual, target)
 				})
 			})
-
-			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
-			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-
-			_, err = store.Write(target, bytes.NewReader(content), size)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			defer func() {
-				err = store.Delete(target)
-				if err != nil {
-					t.Error(err)
-				}
-			}()
-
-			Convey("Read should get path object data without error", func() {
-				var buf bytes.Buffer
-				n, err := store.Read(path, &buf)
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The content should be match", func() {
-					So(buf, ShouldNotBeNil)
-					So(n, ShouldEqual, size)
-					So(md5.Sum(buf.Bytes()), ShouldResemble, md5.Sum(content))
-				})
-			})
 		})
 
 		Convey("When CreateLink to an existing path", func() {
@@ -231,22 +200,6 @@ func TestLinker(t *testing.T, store types.Storager) {
 
 				So(ok, ShouldBeTrue)
 				So(linkTarget, ShouldEqual, secondTarget)
-			})
-
-			Convey("Read should get path object data without error", func() {
-				var buf bytes.Buffer
-				n, err := store.Read(path, &buf)
-
-				Convey("The error should be nil", func() {
-					So(err, ShouldBeNil)
-				})
-
-				Convey("The content should be match", func() {
-					// The content should match the secondTarget
-					So(buf, ShouldNotBeNil)
-					So(n, ShouldEqual, secondSize)
-					So(md5.Sum(buf.Bytes()), ShouldResemble, md5.Sum(secondContent))
-				})
 			})
 		})
 	})
