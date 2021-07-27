@@ -148,9 +148,13 @@ func TestAppender(t *testing.T, store types.Storager) {
 
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			content, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
-			r := bytes.NewReader(content)
 
-			_, err = ap.WriteAppend(o, r, size)
+			_, err = ap.WriteAppend(o, bytes.NewReader(content), size)
+			if err != nil {
+				t.Error(err)
+			}
+
+			_, err = ap.WriteAppend(o, bytes.NewReader(content), size)
 			if err != nil {
 				t.Error(err)
 			}
@@ -162,13 +166,13 @@ func TestAppender(t *testing.T, store types.Storager) {
 			})
 
 			var buf bytes.Buffer
-			_, err = store.Read(path, &buf, pairs.WithSize(size))
+			_, err = store.Read(path, &buf, pairs.WithSize(size*2))
 
 			Convey("Read error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 			Convey("The content should be match", func() {
-				So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
+				So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(bytes.Repeat(content, 2)))
 			})
 		})
 	})
