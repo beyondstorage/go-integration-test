@@ -3,6 +3,7 @@ package tests
 import (
 	"io"
 	"math/rand"
+	"path/filepath"
 	"testing"
 
 	"github.com/google/uuid"
@@ -16,6 +17,8 @@ func TestLinker(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
 		l, ok := store.(types.Linker)
 		So(ok, ShouldBeTrue)
+
+		workDir := store.Metadata().WorkDir
 
 		Convey("When create a link object", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
@@ -58,7 +61,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 				linkTarget, ok := o.GetLinkTarget()
 
 				So(ok, ShouldBeTrue)
-				So(linkTarget, ShouldEndWith, target)
+				So(linkTarget, ShouldEqual, filepath.Join(workDir, target))
 			})
 
 			Convey("Stat should get path object without error", func() {
@@ -78,7 +81,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 					linkTarget, ok := obj.GetLinkTarget()
 
 					So(ok, ShouldBeTrue)
-					So(linkTarget, ShouldEndWith, target)
+					So(linkTarget, ShouldEqual, filepath.Join(workDir, target))
 				})
 			})
 		})
@@ -109,7 +112,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 				linkTarget, ok := o.GetLinkTarget()
 
 				So(ok, ShouldBeTrue)
-				So(linkTarget, ShouldEndWith, target)
+				So(linkTarget, ShouldEqual, filepath.Join(workDir, target))
 			})
 
 			Convey("Stat should get path object without error", func() {
@@ -129,7 +132,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 					linkTarget, ok := obj.GetLinkTarget()
 
 					So(ok, ShouldBeTrue)
-					So(linkTarget, ShouldEndWith, target)
+					So(linkTarget, ShouldEqual, filepath.Join(workDir, target))
 				})
 			})
 		})
@@ -197,7 +200,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 				linkTarget, ok := o.GetLinkTarget()
 
 				So(ok, ShouldBeTrue)
-				So(linkTarget, ShouldEndWith, secondTarget)
+				So(linkTarget, ShouldEqual, filepath.Join(workDir, secondTarget))
 			})
 		})
 	})
