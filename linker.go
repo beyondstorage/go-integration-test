@@ -58,7 +58,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 				linkTarget, ok := o.GetLinkTarget()
 
 				So(ok, ShouldBeTrue)
-				So(linkTarget, ShouldEqual, target)
+				So(linkTarget, ShouldEndWith, target)
 			})
 
 			Convey("Stat should get path object without error", func() {
@@ -78,7 +78,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 					linkTarget, ok := obj.GetLinkTarget()
 
 					So(ok, ShouldBeTrue)
-					So(linkTarget, ShouldEqual, target)
+					So(linkTarget, ShouldEndWith, target)
 				})
 			})
 		})
@@ -109,7 +109,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 				linkTarget, ok := o.GetLinkTarget()
 
 				So(ok, ShouldBeTrue)
-				So(linkTarget, ShouldEqual, target)
+				So(linkTarget, ShouldEndWith, target)
 			})
 
 			Convey("Stat should get path object without error", func() {
@@ -129,7 +129,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 					linkTarget, ok := obj.GetLinkTarget()
 
 					So(ok, ShouldBeTrue)
-					So(linkTarget, ShouldEqual, target)
+					So(linkTarget, ShouldEndWith, target)
 				})
 			})
 		})
@@ -197,7 +197,7 @@ func TestLinker(t *testing.T, store types.Storager) {
 				linkTarget, ok := o.GetLinkTarget()
 
 				So(ok, ShouldBeTrue)
-				So(linkTarget, ShouldEqual, secondTarget)
+				So(linkTarget, ShouldEndWith, secondTarget)
 			})
 		})
 	})
