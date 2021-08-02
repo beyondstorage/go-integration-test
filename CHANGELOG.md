@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [V4.3.0] - 2021-08-02
+
+### Added
+
+- link: Implement GSP-86 add linker integration tests (#40)
+
+### Changed
+
+- append: Add test for appending to an exists file (#44)
+- copy: Split TestCopier (#42)
+- move: Split TestMover (#42)
+
+### Fixed
+
+- link: Fix target check failed for linker (#47)
+
 ## [v4.2.0] - 2021-07-14
 
 ### Added
@@ -59,6 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Implement integration test for multiparter
 - Implement integration test for appender
 
+[v4.3.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.2.0...v4.3.0
 [v4.2.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.1.1...v4.2.0
 [v4.1.1]: https://github.com/beyondstorage/go-integration-test/compare/v4.1.0...v4.1.1
 [v4.1.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.0.0...v4.1.0
