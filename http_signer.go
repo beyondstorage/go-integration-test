@@ -52,11 +52,12 @@ func TestHTTPSignerRead(t *testing.T, store types.Storager) {
 
 			client := http.Client{}
 			resp, err := client.Do(req)
-
 			Convey("The request returned error should be nil", func() {
 				So(err, ShouldBeNil)
 				So(resp, ShouldNotBeNil)
 			})
+
+			defer resp.Body.Close()
 
 			buf, err := ioutil.ReadAll(resp.Body)
 			Convey("The content should be match", func() {
@@ -91,7 +92,7 @@ func TestHTTPSignerWrite(t *testing.T, store types.Storager) {
 				So(req.URL, ShouldNotBeNil)
 			})
 
-			req.Body = io.NopCloser(bytes.NewReader(content))
+			req.Body = ioutil.NopCloser(bytes.NewReader(content))
 
 			client := http.Client{}
 			_, err = client.Do(req)
