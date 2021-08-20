@@ -93,6 +93,7 @@ func TestHTTPSignerWrite(t *testing.T, store types.Storager) {
 			})
 
 			req.Body = ioutil.NopCloser(bytes.NewReader(content))
+			req.ContentLength = size
 
 			client := http.Client{}
 			_, err = client.Do(req)
