@@ -3,7 +3,7 @@ module github.com/beyondstorage/go-integration-test/v4
 go 1.15
 
 require (
-	github.com/beyondstorage/go-storage/v4 v4.5.0
+	github.com/beyondstorage/go-storage/v4 v4.6.1-0.20210901100959-56d461e3096e
 	github.com/google/uuid v1.3.0
 	github.com/smartystreets/goconvey v1.6.4
 )

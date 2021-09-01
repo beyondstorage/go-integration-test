@@ -17,12 +17,12 @@ import (
 	"github.com/beyondstorage/go-storage/v4/types"
 )
 
-func TestHTTPSignerRead(t *testing.T, store types.Storager) {
+func TestStorageHTTPSignerRead(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		signer, ok := store.(types.HTTPSigner)
+		signer, ok := store.(types.StorageHTTPSigner)
 		So(ok, ShouldBeTrue)
 
-		Convey("When read via QuerySignHTTP", func() {
+		Convey("When Read via QuerySignHTTPRead", func() {
 			size := rand.Int63n(4 * 1024 * 1024)
 			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
@@ -41,7 +41,7 @@ func TestHTTPSignerRead(t *testing.T, store types.Storager) {
 				}
 			}()
 
-			req, err := signer.QuerySignHTTP(types.OpStoragerRead, path, time.Duration(time.Hour))
+			req, err := signer.QuerySignHTTPRead(path, time.Duration(time.Hour))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -71,12 +71,12 @@ func TestHTTPSignerRead(t *testing.T, store types.Storager) {
 	})
 }
 
-func TestHTTPSignerWrite(t *testing.T, store types.Storager) {
+func TestStorageHTTPSignerWrite(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
-		signer, ok := store.(types.HTTPSigner)
+		signer, ok := store.(types.StorageHTTPSigner)
 		So(ok, ShouldBeTrue)
 
-		Convey("When write via QuerySignHTTP", func() {
+		Convey("When Write via QuerySignHTTPWrite", func() {
 			size := rand.Int63n(4 * 1024 * 1024)
 			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
 			if err != nil {
@@ -84,7 +84,7 @@ func TestHTTPSignerWrite(t *testing.T, store types.Storager) {
 			}
 
 			path := uuid.New().String()
-			req, err := signer.QuerySignHTTP(types.OpStoragerWrite, path, time.Duration(time.Hour))
+			req, err := signer.QuerySignHTTPWrite(path, size, time.Duration(time.Hour))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -93,7 +93,6 @@ func TestHTTPSignerWrite(t *testing.T, store types.Storager) {
 			})
 
 			req.Body = ioutil.NopCloser(bytes.NewReader(content))
-			req.ContentLength = size
 
 			client := http.Client{}
 			_, err = client.Do(req)
