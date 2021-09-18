@@ -71,7 +71,6 @@ func TestStorager(t *testing.T, store types.Storager) {
 				So(n, ShouldEqual, size)
 				So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
 			})
-
 		})
 
 		Convey("When Write a file", func() {
@@ -133,7 +132,150 @@ func TestStorager(t *testing.T, store types.Storager) {
 					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
 				})
 			})
+		})
 
+		Convey("When write a file with a nil io.Reader and 0 size", func() {
+			path := uuid.New().String()
+			var size int64 = 0
+
+			_, err := store.Write(path, nil, size)
+
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Stat should get Object without error", func() {
+				o, err := store.Stat(path)
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The name and size should be match", func() {
+					So(o, ShouldNotBeNil)
+					So(o.Path, ShouldEqual, path)
+
+					osize, ok := o.GetContentLength()
+					So(ok, ShouldBeTrue)
+					So(osize, ShouldEqual, size)
+				})
+			})
+		})
+
+		Convey("When write a file with a nil io.Reader and valid size", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			path := uuid.New().String()
+
+			_, err := store.Write(path, nil, size)
+
+			Convey("The error should not be nil", func() {
+				So(err, ShouldNotBeNil)
+			})
+
+			Convey("Stat should get nil Object and ObjectNotFound error", func() {
+				o, err := store.Stat(path)
+
+				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
+				So(o, ShouldBeNil)
+			})
+		})
+
+		Convey("When write a file with a valid io.Reader and 0 size", func() {
+			var size int64 = 0
+			n := rand.Int63n(4 * 1024 * 1024)
+			r := io.LimitReader(randbytes.NewRand(), n)
+			path := uuid.New().String()
+
+			_, err := store.Write(path, r, size)
+
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Stat should get Object without error", func() {
+				o, err := store.Stat(path)
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The name and size should be match", func() {
+					So(o, ShouldNotBeNil)
+					So(o.Path, ShouldEqual, path)
+
+					osize, ok := o.GetContentLength()
+					So(ok, ShouldBeTrue)
+					So(osize, ShouldEqual, size)
+				})
+			})
+		})
+
+		Convey("When write a file with a valid io.Reader and length greater than size", func() {
+			n := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			size := rand.Int63n(n)
+			r, _ := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), n))
+			path := uuid.New().String()
+
+			_, err := store.Write(path, bytes.NewReader(r), size)
+
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Stat should get Object without error", func() {
+				o, err := store.Stat(path)
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The name and size should be match", func() {
+					So(o, ShouldNotBeNil)
+					So(o.Path, ShouldEqual, path)
+
+					osize, ok := o.GetContentLength()
+					So(ok, ShouldBeTrue)
+					So(osize, ShouldEqual, size)
+				})
+			})
+
+			Convey("Read should get Object without error", func() {
+				content, _ := ioutil.ReadAll(io.LimitReader(bytes.NewReader(r), size))
+				var buf bytes.Buffer
+				n, err := store.Read(path, &buf)
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The content should match the size limit of the content", func() {
+					So(buf, ShouldNotBeNil)
+
+					So(n, ShouldEqual, size)
+					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
+				})
+			})
 		})
 
 		Convey("When Stat a file", func() {
