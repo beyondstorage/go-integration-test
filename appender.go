@@ -132,6 +132,99 @@ func TestAppender(t *testing.T, store types.Storager) {
 			})
 		})
 
+		Convey("When WriteAppend with a nil io.Reader and 0 size", func() {
+			path := uuid.New().String()
+			o, err := ap.CreateAppend(path)
+			if err != nil {
+				t.Error(err)
+			}
+
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			var size int64 = 0
+			n, err := ap.WriteAppend(o, nil, size)
+
+			Convey("WriteAppend error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("WriteAppend size should be equal to n", func() {
+				So(n, ShouldEqual, size)
+			})
+		})
+
+		Convey("When WriteAppend with a nil io.Reader and valid size", func() {
+			path := uuid.New().String()
+			o, err := ap.CreateAppend(path)
+			if err != nil {
+				t.Error(err)
+			}
+
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+
+			_, err = ap.WriteAppend(o, nil, size)
+
+			Convey("WriteAppend error should not be nil", func() {
+				So(err, ShouldNotBeNil)
+			})
+		})
+
+		Convey("When WriteAppend with valid io.Reader and 0 size", func() {
+			path := uuid.New().String()
+			o, err := ap.CreateAppend(path)
+			if err != nil {
+				t.Error(err)
+			}
+
+			var size int64 = 0
+			rn := rand.Int63n(4 * 1024 * 1024)
+			r := io.LimitReader(randbytes.NewRand(), rn)
+
+			n, err := ap.WriteAppend(o, r, size)
+
+			Convey("WriteAppend error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("WriteAppend size should be equal to n", func() {
+				So(n, ShouldEqual, size)
+			})
+		})
+
+		Convey("When WriteAppend with a valid io.Reader and length greater than size", func() {
+			path := uuid.New().String()
+			o, err := ap.CreateAppend(path)
+			if err != nil {
+				t.Error(err)
+			}
+
+			rn := rand.Int63n(4 * 1024 * 1024)
+			size := rand.Int63n(rn)
+			r := io.LimitReader(randbytes.NewRand(), rn)
+
+			n, err := ap.WriteAppend(o, r, size)
+
+			Convey("WriteAppend error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("WriteAppend size should be equal to n", func() {
+				So(n, ShouldEqual, size)
+			})
+		})
+
 		Convey("When CommitAppend", func() {
 			path := uuid.NewString()
 			o, err := ap.CreateAppend(path)
