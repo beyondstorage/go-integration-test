@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math/rand"
+	"path/filepath"
 	"testing"
 
 	"github.com/google/uuid"
@@ -37,6 +38,8 @@ func TestStorager(t *testing.T, store types.Storager) {
 				So(m, ShouldNotBeEmpty)
 			})
 		})
+
+		workDir := store.Metadata().WorkDir
 
 		Convey("When Read a file", func() {
 			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
@@ -431,6 +434,101 @@ func TestStorager(t *testing.T, store types.Storager) {
 				osize, ok := o.GetContentLength()
 				So(ok, ShouldBeTrue)
 				So(osize, ShouldEqual, size)
+			})
+		})
+
+		Convey("When testing GSP-749 unify path behavior", func() {
+			Convey("When using absolute path", func() {
+				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+				content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+				if err != nil {
+					t.Error(err)
+				}
+
+				path := uuid.New().String()
+				absPath := filepath.Join(workDir, path)
+				_, err = store.Write(absPath, bytes.NewReader(content), size)
+				if err != nil {
+					t.Error(err)
+				}
+				defer func() {
+					err := store.Delete(absPath)
+					if err != nil {
+						t.Error(err)
+					}
+				}()
+
+				Convey("Stat should get Object without error", func() {
+					o, err := store.Stat(absPath)
+
+					Convey("The error should be nil", func() {
+						So(err, ShouldBeNil)
+						So(o, ShouldNotBeNil)
+						So(o.Path, ShouldEqual, filepath.ToSlash(absPath))
+					})
+				})
+
+				Convey("Read should get Object content without error", func() {
+					var buf bytes.Buffer
+					n, err := store.Read(absPath, &buf)
+
+					Convey("The error should be nil", func() {
+						So(err, ShouldBeNil)
+					})
+
+					Convey("The content should be match", func() {
+						So(buf, ShouldNotBeNil)
+
+						So(n, ShouldEqual, size)
+						So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
+					})
+				})
+			})
+
+			Convey("When using backslash in path", func() {
+				size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+				content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+				if err != nil {
+					t.Error(err)
+				}
+
+				path := uuid.New().String() + "\\" + uuid.New().String()
+				_, err = store.Write(path, bytes.NewReader(content), size)
+				if err != nil {
+					t.Error(err)
+				}
+				defer func() {
+					err := store.Delete(path)
+					if err != nil {
+						t.Error(err)
+					}
+				}()
+
+				Convey("Stat should get Object without error", func() {
+					o, err := store.Stat(path)
+
+					Convey("The error should be nil", func() {
+						So(err, ShouldBeNil)
+						So(o, ShouldNotBeNil)
+						So(o.Path, ShouldEqual, filepath.ToSlash(path))
+					})
+				})
+
+				Convey("Read should get Object content without error", func() {
+					var buf bytes.Buffer
+					n, err := store.Read(path, &buf)
+
+					Convey("The error should be nil", func() {
+						So(err, ShouldBeNil)
+					})
+
+					Convey("The content should be match", func() {
+						So(buf, ShouldNotBeNil)
+
+						So(n, ShouldEqual, size)
+						So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
+					})
+				})
 			})
 		})
 	})
