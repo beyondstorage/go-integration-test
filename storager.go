@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -464,7 +465,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 					Convey("The error should be nil", func() {
 						So(err, ShouldBeNil)
 						So(o, ShouldNotBeNil)
-						So(o.Path, ShouldEqual, filepath.ToSlash(absPath))
+						So(o.Path, ShouldEqual, strings.ReplaceAll(absPath, "\\", "/"))
 					})
 				})
 
@@ -510,7 +511,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 					Convey("The error should be nil", func() {
 						So(err, ShouldBeNil)
 						So(o, ShouldNotBeNil)
-						So(o.Path, ShouldEqual, filepath.ToSlash(path))
+						So(o.Path, ShouldEqual, strings.ReplaceAll(path, "\\", "/"))
 					})
 				})
 
