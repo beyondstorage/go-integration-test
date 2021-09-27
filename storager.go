@@ -163,6 +163,10 @@ func TestStorager(t *testing.T, store types.Storager) {
 				So(err, ShouldBeNil)
 			})
 
+			Convey("The write size should be match", func() {
+				So(curWrite, ShouldEqual, size)
+			})
+
 			curRead := int64(0)
 			readFn := func(bs []byte) {
 				curRead += int64(len(bs))
@@ -172,6 +176,10 @@ func TestStorager(t *testing.T, store types.Storager) {
 
 			Convey("The error returned be Read should be nil", func() {
 				So(err, ShouldBeNil)
+			})
+
+			Convey("The read size should be match", func() {
+				So(curRead, ShouldEqual, n)
 			})
 
 			Convey("The content should be match", func() {
