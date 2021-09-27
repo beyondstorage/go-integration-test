@@ -138,6 +138,50 @@ func TestStorager(t *testing.T, store types.Storager) {
 			})
 		})
 
+		Convey("When Write and Read a file with IoCallback", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			if err != nil {
+				t.Error(err)
+			}
+
+			path := uuid.New().String()
+
+			curWrite := int64(0)
+			writeFn := func(bs []byte) {
+				curWrite += int64(len(bs))
+			}
+			_, err = store.Write(path, bytes.NewReader(content), size, ps.WithIoCallback(writeFn))
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			Convey("The error returned by Write should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			curRead := int64(0)
+			readFn := func(bs []byte) {
+				curRead += int64(len(bs))
+			}
+			var buf bytes.Buffer
+			n, err := store.Read(path, &buf, ps.WithIoCallback(readFn))
+
+			Convey("The error returned be Read should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The content should be match", func() {
+				So(buf, ShouldNotBeNil)
+
+				So(n, ShouldEqual, size)
+				So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
+			})
+		})
+
 		Convey("When write a file with a nil io.Reader and 0 size", func() {
 			path := uuid.New().String()
 			var size int64 = 0
