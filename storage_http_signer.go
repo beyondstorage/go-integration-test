@@ -3,6 +3,7 @@ package tests
 import (
 	"bytes"
 	"crypto/sha256"
+	"errors"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -14,6 +15,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/beyondstorage/go-storage/v4/pkg/randbytes"
+	"github.com/beyondstorage/go-storage/v4/services"
 	"github.com/beyondstorage/go-storage/v4/types"
 )
 
@@ -118,6 +120,47 @@ func TestStorageHTTPSignerWrite(t *testing.T, store types.Storager) {
 					So(n, ShouldEqual, size)
 					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
 				})
+			})
+		})
+	})
+}
+
+func TestStorageHTTPSignerDelete(t *testing.T, store types.Storager) {
+	Convey("Given a basic Storager", t, func() {
+		signer, ok := store.(types.StorageHTTPSigner)
+		So(ok, ShouldBeTrue)
+
+		Convey("When Delete via QuerySignHTTPDelete", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			r := io.LimitReader(randbytes.NewRand(), size)
+
+			path := uuid.New().String()
+			_, err := store.Write(path, r, size)
+			if err != nil {
+				t.Error(err)
+			}
+
+			req, err := signer.QuerySignHTTPDelete(path, time.Duration(time.Hour))
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+
+				So(req, ShouldNotBeNil)
+				So(req.URL, ShouldNotBeNil)
+			})
+
+			client := http.Client{}
+			_, err = client.Do(req)
+
+			Convey("The request returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Stat should get nil Object and ObjectNotFound error", func() {
+				o, err := store.Stat(path)
+
+				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
+				So(o, ShouldBeNil)
 			})
 		})
 	})
