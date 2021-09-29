@@ -18,7 +18,7 @@ import (
 )
 
 func TestMultipartHTTPSignerCreateMultipart(t *testing.T, store types.Storager) {
-	Convey("Given a basic Storager", func() {
+	Convey("Given a basic Storager", t, func() {
 		signer, ok := store.(types.MultipartHTTPSigner)
 		So(ok, ShouldBeTrue)
 
@@ -38,6 +38,17 @@ func TestMultipartHTTPSignerCreateMultipart(t *testing.T, store types.Storager) 
 
 			Convey("The request returned error should be nil", func() {
 				So(err, ShouldBeNil)
+			})
+
+			Convey("List with ModePart should get the object without error", func() {
+				it, err := store.List(path, pairs.WithListMode(types.ListModePart))
+
+				So(err, ShouldBeNil)
+
+				o, err := it.Next()
+				So(err, ShouldBeNil)
+				So(o, ShouldNotBeNil)
+				So(o.Path, ShouldEqual, path)
 			})
 
 			defer func() {
@@ -61,7 +72,7 @@ func TestMultipartHTTPSignerCreateMultipart(t *testing.T, store types.Storager) 
 }
 
 func TestMultipartHTTPSignerWriteMultipart(t *testing.T, store types.Storager) {
-	Convey("Given a basic Storager", func() {
+	Convey("Given a basic Storager", t, func() {
 		signer, ok := store.(types.MultipartHTTPSigner)
 		So(ok, ShouldBeTrue)
 
@@ -97,17 +108,22 @@ func TestMultipartHTTPSignerWriteMultipart(t *testing.T, store types.Storager) {
 			req.Body = ioutil.NopCloser(bytes.NewReader(content))
 
 			client := http.Client{}
-			_, err = client.Do(req)
+			resp, err := client.Do(req)
 
 			Convey("The request returned error should be nil", func() {
 				So(err, ShouldBeNil)
+				So(resp, ShouldNotBeNil)
+			})
+
+			Convey("The size should be match", func() {
+				So(resp.Request.ContentLength, ShouldEqual, size)
 			})
 		})
 	})
 }
 
 func TestMultipartHTTPSignerListMultipart(t *testing.T, store types.Storager) {
-	Convey("Given a basic Storager", func() {
+	Convey("Given a basic Storager", t, func() {
 		signer, ok := store.(types.MultipartHTTPSigner)
 		So(ok, ShouldBeTrue)
 
@@ -157,7 +173,7 @@ func TestMultipartHTTPSignerListMultipart(t *testing.T, store types.Storager) {
 }
 
 func TestMultipartHTTPSignerCompleteMultipart(t *testing.T, store types.Storager) {
-	Convey("Given a basic Storager", func() {
+	Convey("Given a basic Storager", t, func() {
 		signer, ok := store.(types.MultipartHTTPSigner)
 		So(ok, ShouldBeTrue)
 

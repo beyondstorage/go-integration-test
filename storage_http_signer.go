@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"errors"
+	"github.com/beyondstorage/go-storage/v4/pairs"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -141,6 +142,40 @@ func TestStorageHTTPSignerDelete(t *testing.T, store types.Storager) {
 			}
 
 			req, err := signer.QuerySignHTTPDelete(path, time.Duration(time.Hour))
+
+			Convey("The error should be nil", func() {
+				So(err, ShouldBeNil)
+
+				So(req, ShouldNotBeNil)
+				So(req.URL, ShouldNotBeNil)
+			})
+
+			client := http.Client{}
+			_, err = client.Do(req)
+
+			Convey("The request returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Stat should get nil Object and ObjectNotFound error", func() {
+				o, err := store.Stat(path)
+
+				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
+				So(o, ShouldBeNil)
+			})
+		})
+
+		Convey("When Delete with multipart id via QuerySignHTTPDelete", func() {
+			mu, ok := store.(types.Multiparter)
+			So(ok, ShouldBeTrue)
+
+			path := uuid.New().String()
+			o, err := mu.CreateMultipart(path)
+			if err != nil {
+				t.Error(err)
+			}
+
+			req, err := signer.QuerySignHTTPDelete(path, time.Duration(time.Hour), pairs.WithMultipartID(o.MustGetMultipartID()))
 
 			Convey("The error should be nil", func() {
 				So(err, ShouldBeNil)
