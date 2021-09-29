@@ -187,15 +187,14 @@ func TestStorageHTTPSignerDelete(t *testing.T, store types.Storager) {
 			client := http.Client{}
 			_, err = client.Do(req)
 
-			Convey("The request returned error should be nil", func() {
+			Convey("The first request returned error should be nil", func() {
 				So(err, ShouldBeNil)
 			})
 
-			Convey("Stat should get nil Object and ObjectNotFound error", func() {
-				o, err := store.Stat(path)
+			_, err = client.Do(req)
 
-				So(errors.Is(err, services.ErrObjectNotExist), ShouldBeTrue)
-				So(o, ShouldBeNil)
+			Convey("The second request returned error should be nil", func() {
+				So(err, ShouldBeNil)
 			})
 		})
 	})
