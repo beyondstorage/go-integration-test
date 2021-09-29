@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -76,6 +77,81 @@ func TestStorager(t *testing.T, store types.Storager) {
 			})
 		})
 
+		Convey("When Read a file with offset or size", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			if err != nil {
+				t.Error(err)
+			}
+
+			path := uuid.New().String()
+			_, err = store.Write(path, bytes.NewReader(content), size)
+			if err != nil {
+				t.Error(err)
+			}
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			Convey("When Read with offset", func() {
+				offset := rand.Int63n(size)
+
+				var buf bytes.Buffer
+				n, err := store.Read(path, &buf, ps.WithOffset(offset))
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The content should be match", func() {
+					So(buf, ShouldNotBeNil)
+
+					So(n, ShouldEqual, size-offset)
+					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content[offset:]))
+				})
+			})
+
+			Convey("When Read with size", func() {
+				len := rand.Int63n(size)
+
+				var buf bytes.Buffer
+				n, err := store.Read(path, &buf, ps.WithSize(len))
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The content should be match", func() {
+					So(buf, ShouldNotBeNil)
+
+					So(n, ShouldEqual, len)
+					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content[:len]))
+				})
+			})
+
+			Convey("When Read with offset and size", func() {
+				offset := rand.Int63n(size)
+				len := rand.Int63n(size - offset)
+
+				var buf bytes.Buffer
+				n, err := store.Read(path, &buf, ps.WithOffset(offset), ps.WithSize(len))
+
+				Convey("The error should be nil", func() {
+					So(err, ShouldBeNil)
+				})
+
+				Convey("The content should be match", func() {
+					So(buf, ShouldNotBeNil)
+
+					So(n, ShouldEqual, len)
+					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content[offset:offset+len]))
+				})
+			})
+		})
+
 		Convey("When Write a file", func() {
 			firstSize := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
 			r := io.LimitReader(randbytes.NewRand(), firstSize)
@@ -134,6 +210,58 @@ func TestStorager(t *testing.T, store types.Storager) {
 					So(n, ShouldEqual, secondSize)
 					So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
 				})
+			})
+		})
+
+		Convey("When Write and Read a file with IoCallback", func() {
+			size := rand.Int63n(4 * 1024 * 1024) // Max file size is 4MB
+			content, err := ioutil.ReadAll(io.LimitReader(randbytes.NewRand(), size))
+			if err != nil {
+				t.Error(err)
+			}
+
+			path := uuid.New().String()
+
+			curWrite := int64(0)
+			writeFn := func(bs []byte) {
+				curWrite += int64(len(bs))
+			}
+			_, err = store.Write(path, bytes.NewReader(content), size, ps.WithIoCallback(writeFn))
+			defer func() {
+				err := store.Delete(path)
+				if err != nil {
+					t.Error(err)
+				}
+			}()
+
+			Convey("The error returned by Write should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The write size should be match", func() {
+				So(curWrite, ShouldEqual, size)
+			})
+
+			curRead := int64(0)
+			readFn := func(bs []byte) {
+				curRead += int64(len(bs))
+			}
+			var buf bytes.Buffer
+			n, err := store.Read(path, &buf, ps.WithIoCallback(readFn))
+
+			Convey("The error returned be Read should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("The read size should be match", func() {
+				So(curRead, ShouldEqual, n)
+			})
+
+			Convey("The content should be match", func() {
+				So(buf, ShouldNotBeNil)
+
+				So(n, ShouldEqual, size)
+				So(sha256.Sum256(buf.Bytes()), ShouldResemble, sha256.Sum256(content))
 			})
 		})
 
@@ -464,7 +592,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 					Convey("The error should be nil", func() {
 						So(err, ShouldBeNil)
 						So(o, ShouldNotBeNil)
-						So(o.Path, ShouldEqual, filepath.ToSlash(absPath))
+						So(o.Path, ShouldEqual, strings.ReplaceAll(absPath, "\\", "/"))
 					})
 				})
 
@@ -510,7 +638,7 @@ func TestStorager(t *testing.T, store types.Storager) {
 					Convey("The error should be nil", func() {
 						So(err, ShouldBeNil)
 						So(o, ShouldNotBeNil)
-						So(o.Path, ShouldEqual, filepath.ToSlash(path))
+						So(o.Path, ShouldEqual, strings.ReplaceAll(path, "\\", "/"))
 					})
 				})
 
