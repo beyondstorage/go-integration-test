@@ -17,7 +17,7 @@ import (
 	"github.com/beyondstorage/go-storage/v4/types"
 )
 
-func TestMultipartHTTPSignerCreateMultipart(t *testing.T, store types.Storager) {
+func TestMultipartHTTPSigner(t *testing.T, store types.Storager) {
 	Convey("Given a basic Storager", t, func() {
 		signer, ok := store.(types.MultipartHTTPSigner)
 		So(ok, ShouldBeTrue)
@@ -68,13 +68,6 @@ func TestMultipartHTTPSignerCreateMultipart(t *testing.T, store types.Storager) 
 				}
 			}()
 		})
-	})
-}
-
-func TestMultipartHTTPSignerWriteMultipart(t *testing.T, store types.Storager) {
-	Convey("Given a basic Storager", t, func() {
-		signer, ok := store.(types.MultipartHTTPSigner)
-		So(ok, ShouldBeTrue)
 
 		Convey("When WriteMultipart via QuerySignHTTPWriteMultipart", func() {
 			path := uuid.New().String()
@@ -119,13 +112,6 @@ func TestMultipartHTTPSignerWriteMultipart(t *testing.T, store types.Storager) {
 				So(resp.Request.ContentLength, ShouldEqual, size)
 			})
 		})
-	})
-}
-
-func TestMultipartHTTPSignerListMultipart(t *testing.T, store types.Storager) {
-	Convey("Given a basic Storager", t, func() {
-		signer, ok := store.(types.MultipartHTTPSigner)
-		So(ok, ShouldBeTrue)
 
 		Convey("When ListMultiPart via QuerySignHTTPListMultiPart", func() {
 			mu, ok := store.(types.Multiparter)
@@ -169,13 +155,6 @@ func TestMultipartHTTPSignerListMultipart(t *testing.T, store types.Storager) {
 				So(err, ShouldBeNil)
 			})
 		})
-	})
-}
-
-func TestMultipartHTTPSignerCompleteMultipart(t *testing.T, store types.Storager) {
-	Convey("Given a basic Storager", t, func() {
-		signer, ok := store.(types.MultipartHTTPSigner)
-		So(ok, ShouldBeTrue)
 
 		Convey("When CompletePart via QuerySignHTTPCompletePart", func() {
 			mu, ok := store.(types.Multiparter)
