@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [v4.6.0] - 2021-09-30
+
+### Added
+
+- test: Add tests for GSP-749 unify path behavior (#59)
+- test: Add IoCallback for read and write tests (#61)
+- test: Add integration tests for MultipartHTTPSigner (#62)
+- test: Add read with offset and size tests (#63)
+
+### Fixed
+
+- fix: Replace backslash with slash for path behavior test (#60)
+
 ## [v4.5.0] - 2021-09-23
 
 ### Added
@@ -87,6 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Implement integration test for multiparter
 - Implement integration test for appender
 
+[v4.6.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.5.0...v4.6.0
 [v4.5.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.4.0...v4.5.0
 [v4.4.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.3.0...v4.4.0
 [v4.3.0]: https://github.com/beyondstorage/go-integration-test/compare/v4.2.0...v4.3.0
